@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from email import message
 import json
 import token
@@ -14,9 +15,8 @@ import requests
 import re
 from notifiers import get_notifier
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-from auth_data import API_key, email, phone, telegram_bot_token, user_id #!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+from auth_data import API_key, email, phone, telegram_bot_token, user_id, emailPin, numberOfCitiesMonitoring #Enter your data in auth_data.py !!!!!!!!!!!!
 
 
 
@@ -43,8 +43,6 @@ if __name__ == "__main__":
     otp_token = dict(window_handlers)
 
     telegram = get_notifier('telegram')
-
-    restart_city = ""
     
             
     def check_exists_by_xpath(xpath):
@@ -74,9 +72,8 @@ if __name__ == "__main__":
                 driver.get(current_url)
             else: 
                 driver.refresh()
-            print("Error... Starting this page again...")
-            raise Exception("Restarting page...")
-            
+            print("Error... Refreshing...")
+            wait(elem_type, elem)
 
 
     def auth():
@@ -89,11 +86,12 @@ if __name__ == "__main__":
         
         
         # Открываем страницы городов и отправляем капчи на решение
-        for city in cities_list:
-            initial_auth(city) 
-        telegram.notify(token=telegram_bot_token, chat_id=user_id, message="Start authorization!")
+        for city in cities_list[:numberOfCitiesMonitoring]: # "numberOfCitiesMonitoring" отвечает за количкство городов в работе
+            initial_auth(city)
+            sleep(1) 
+        telegram.notify(token=telegram_bot_token, chat_id=user_id, message="Начинаю аунтефикацию!")
         # Получаем OTP ключи для каждого города
-        for city in cities_list:
+        for city in cities_list[:numberOfCitiesMonitoring]: #"numberOfCitiesMonitoring" отвечает за количкство городов в работе
             OTP_auth(city)
         
         # Ждём решения капчи и завершаем авторизацию
@@ -110,9 +108,8 @@ if __name__ == "__main__":
         except:
             driver.switch_to.window(driver.window_handles[-1])
             driver.close()
-            driver.switch_to.new_window()
+            driver.switch_to.new_window("tab")
             driver.get(initial_url)
-            
 
         window_handlers[city] = driver.current_window_handle #Записали ID текущей вкладки под названием города
         
@@ -136,7 +133,7 @@ if __name__ == "__main__":
         wait(By.ID, "centre") # Выбрали город
         city_list = Select(driver.find_element(By.ID, "centre"))
         city_list.select_by_visible_text(city)
-        driver.switch_to.new_window('tab') # Открыли новую вкладку для следующего города
+        driver.switch_to.new_window('window') # Открыли новую вкладку для следующего города
         
         
     def OTP_auth(city):
@@ -176,7 +173,7 @@ if __name__ == "__main__":
         try:
             sleep(1)
             wait(By.ID, "pin")
-            driver.find_element(By.ID, "pin").send_keys("1234")
+            driver.find_element(By.ID, "pin").send_keys(emailPin)
             driver.find_element(By.ID, "verify").click()
         except:
             print("Don't need pin")
@@ -249,6 +246,8 @@ if __name__ == "__main__":
         #Agree BTN
         wait(By.NAME, "agree")
         driver.find_element(By.NAME, "agree").click()
+
+        sleep(2)
         
         
         
@@ -312,13 +311,10 @@ if __name__ == "__main__":
             auth()
     
     
-    
     auth()
     
-
-    
     while loop != 0:
-        for citya in cities_list:
+        for citya in cities_list[:2]:
             check_data_loop(citya)
         sleep(15)
     
