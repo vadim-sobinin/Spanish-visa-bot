@@ -1,0 +1,1 @@
+This file is only needed for the git to keep track of the empty folder where the bot will upload its results. 
