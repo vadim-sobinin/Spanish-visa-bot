@@ -15,7 +15,7 @@ Quick Guide on how to run this project on your computer.
 1. Make sure you have or install one of the latest versions of Google Chrome (older versions can cause errors)
 2. Make sure you have or install Python from the official website: python.org/downloads/
 3. Download the project code and open a terminal or code editor from the project file. 
-4. Install and activate the virtual environment using two commands: ```python -m venv venv``` 
+4. Install and activate the virtual environment using two commands: ```python3 -m venv venv``` 
 
     and for Windows use: ```venv\Scripts\activate.bat``` 
 
